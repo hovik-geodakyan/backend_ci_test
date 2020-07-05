@@ -8,12 +8,21 @@ class UserBalance_model extends CI_Emerald_Model
     protected $user_id;
     /** @var float */
     protected $amount;
+    /** @var float */
+    protected $check_amount;
     /** @var string */
     protected $time_created;
+    /** @var string */
+    protected $source;
 
     public function get_amount(): float
     {
         return $this->amount;
+    }
+
+    public function get_check_amount(): float
+    {
+        return $this->check_amount;
     }
 
     /**
@@ -26,7 +35,7 @@ class UserBalance_model extends CI_Emerald_Model
     public static function create(int $user_id, float $amount, string $source)
     {
         $latest_transaction = self::get_latest_transaction($user_id);
-        $latest_check_amount = $latest_transaction ? $latest_transaction->get_amount() : 0;
+        $latest_check_amount = $latest_transaction ? $latest_transaction->get_check_amount() : 0;
         $check_amount = $latest_check_amount + $amount;
 
         App::get_ci()->s->from(self::CLASS_TABLE)->insert(

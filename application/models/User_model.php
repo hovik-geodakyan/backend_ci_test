@@ -274,6 +274,28 @@ class User_model extends CI_Emerald_Model {
     }
 
     /**
+     * @throws Exception
+     */
+    public function spend_like()
+    {
+        UserBalance_model::create($this->get_id(), -1, 'spent_on_like');
+        $this->set_wallet_balance(
+            $this->get_wallet_balance() - 1
+        );
+        $this->set_wallet_total_withdrawn(
+            $this->get_wallet_total_withdrawn() + 1
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function can_like(): bool
+    {
+        return $this->get_wallet_balance() > 0;
+    }
+
+    /**
      * @return self[]
      * @throws Exception
      */

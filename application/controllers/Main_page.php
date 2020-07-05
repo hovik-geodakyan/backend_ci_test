@@ -188,10 +188,33 @@ class Main_page extends MY_Controller
         return $this->response_success(['amount' => $likes]);
     }
 
+    /**
+     * @param $post_id
+     * @return object|string|void
+     */
+    public function like_post($post_id)
+    {
+        if (!User_model::is_logged()){
+            return $this->response_error(CI_Core::RESPONSE_GENERIC_NEED_AUTH);
+        }
 
-    public function like(){
+        $user = User_model::get_user();
+
+        if (!$user->can_like()) {
+            return $this->response_error(CI_Core::RESPONSE_GENERIC_NO_ACCESS);
+        }
+
+        try {
+            $post = new Post_model($post_id);
+        } catch (EmeraldModelNoDataException $ex){
+            return $this->response_error(CI_Core::RESPONSE_GENERIC_NO_DATA);
+        }
+
+        $post->add_like();
+        $user->spend_like();
+
         // todo: add like post\comment logic
-        return $this->response_success(['likes' => rand(1,55)]); // Колво лайков под постом \ комментарием чтобы обновить
+        return $this->response_success(['likes' => $post->get_likes()]); // Колво лайков под постом \ комментарием чтобы обновить
     }
 
 }

@@ -152,3 +152,8 @@ CREATE TABLE `user_balance` (
   CONSTRAINT `user_balance_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 ```
+
+**To update posts table and add likes column**
+```
+ALTER TABLE post ADD COLUMN likes int UNSIGNED NOT NULL DEFAULT 0
+```

@@ -17,6 +17,8 @@ class Post_model extends CI_Emerald_Model
     protected $text;
     /** @var string */
     protected $img;
+    /** @var int */
+    protected $likes;
 
     /** @var string */
     protected $time_created;
@@ -25,7 +27,6 @@ class Post_model extends CI_Emerald_Model
 
     // generated
     protected $comments;
-    protected $likes;
     protected $user;
 
 
@@ -133,6 +134,12 @@ class Post_model extends CI_Emerald_Model
     public function get_likes()
     {
         return $this->likes;
+    }
+
+    public function add_like()
+    {
+        //TODO: log this into database
+        return $this->save('likes', ++$this->likes);
     }
 
     /**
@@ -280,7 +287,7 @@ class Post_model extends CI_Emerald_Model
         $o->user = User_model::preparation($data->get_user(),'main_page');
         $o->coments = Comment_model::preparation($data->get_comments(),'full_info');
 
-        $o->likes = rand(0, 25);
+        $o->likes = $data->get_likes();
 
 
         $o->time_created = $data->get_time_created();
