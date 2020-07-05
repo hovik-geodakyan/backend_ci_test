@@ -180,12 +180,16 @@
                   <span>{{likes}}</span>
                 </div>
               </div>
-              <p class="card-text" v-for="comment in post.coments"> {{comment.user.personaname + ' - '}}<small class="text-muted">{{comment.text}}</small></p>
+              <comments :comments="post.coments" @reply="replyToComment"></comments>
               <form class="form-inline">
                 <div class="form-group">
                   <input type="text" class="form-control" id="addComment" v-model="commentText">
+                  <div class="invalid-feedback" v-if="invalidComment">
+                    Invalid comment text.
+                  </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Add comment</button>
+                <button v-if="selectedComment" type="submit" class="btn btn-primary" @click.prevent="addComment">Reply</button>
+                <button v-else type="submit" class="btn btn-primary" @click.prevent="addComment">Add comment</button>
               </form>
             </div>
           </div>

@@ -59,34 +59,64 @@ class Main_page extends MY_Controller
         return $this->response_success(['post' => $posts]);
     }
 
-
-    public function comment($post_id,$message){ // or can be App::get_ci()->input->post('news_id') , but better for GET REQUEST USE THIS ( tests )
-
+    /**
+     * @param $post_id
+     * @param null $comment_id - is sent if the comment is a reply to another comment
+     * @return object|string|void
+     * @throws Exception
+     */
+    public function comment($post_id, $comment_id = null)
+    { // or can be App::get_ci()->input->post('news_id') , but better for GET REQUEST USE THIS ( tests )
         if (!User_model::is_logged()){
             return $this->response_error(CI_Core::RESPONSE_GENERIC_NEED_AUTH);
         }
 
         $post_id = intval($post_id);
 
-        if (empty($post_id) || empty($message)){
+        if (empty($post_id)) {
             return $this->response_error(CI_Core::RESPONSE_GENERIC_WRONG_PARAMS);
         }
 
-        try
-        {
+        try {
             $post = new Post_model($post_id);
         } catch (EmeraldModelNoDataException $ex){
             return $this->response_error(CI_Core::RESPONSE_GENERIC_NO_DATA);
         }
 
+        if ($comment_id) {
+            try {
+                $comment = new Comment_model($comment_id);
+            } catch (EmeraldModelNoDataException $ex){
+                return $this->response_error(CI_Core::RESPONSE_GENERIC_NO_DATA);
+            }
 
-        $posts =  Post_model::preparation($post, 'full_info');
+            if ($comment->get_assign_id() !== $post_id) {
+                //Ideally this should never occur - check if the comment we are trying to reply to is from the correct post
+                return $this->response_error(CI_Core::RESPONSE_GENERIC_WRONG_PARAMS);
+            }
+        }
+
+        //TODO: we can validate comment length here, moderation can also be performed here
+        $this->form_validation->set_rules('text', 'Text', 'required');
+        if (!$this->form_validation->run()) {
+            return $this->response_error(CI_Core::RESPONSE_GENERIC_WRONG_PARAMS);
+        }
+
+        Comment_model::create([
+            'user_id' => User_model::get_session_id(),
+            'assign_id' => $post_id,
+            'parent_id' => $comment_id,
+            'text' => $this->input->post('text'),
+        ]);
+
+        $posts = Post_model::preparation($post, 'full_info');
         return $this->response_success(['post' => $posts]);
     }
 
 
     public function login()
     {
+        //validate input first
         $this->form_validation->set_rules('login', 'Login', 'required|trim');
         $this->form_validation->set_rules('password', 'Password', 'required');
 
@@ -104,6 +134,7 @@ class Main_page extends MY_Controller
             return $this->response_error(CI_Core::RESPONSE_GENERIC_WRONG_PARAMS);
         }
 
+        //start session only if the attempt was successful
         Login_model::start_session($user->get_id());
 
         return $this->response_success(['user' => $user->get_id()]);

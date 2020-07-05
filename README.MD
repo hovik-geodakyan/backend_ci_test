@@ -131,3 +131,9 @@ mysql/dump.sql - залить дамп
 6. По связи безопасности и фронта конкретных требований нет но Вы можете проявить креативность.
 
 #### Удачи Вам! ;)
+
+
+**Please run the following query to update the database structure for recursive comments**
+```
+ALTER TABLE comment ADD COLUMN parent_id int unsigned NULL;
+```

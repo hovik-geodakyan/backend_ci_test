@@ -1,9 +1,34 @@
+// this will recursively display comments with their replies
+var Comments = {
+	props: ['comments'],
+	name: 'comments',
+	template: '<div>' +
+		'<p class="card-text" v-for="comment in comments" style="margin-left: 10px">' +
+			'{{comment.user.personaname + \' - \'}}' +
+			'<small class="text-muted">{{comment.text}}</small>' +
+			'<a href="#" style="float:right" @click.prevent="replyToComment(comment.id)">reply</a>' +
+			'<comments v-if="comment.replies.length > 0" :comments="comment.replies" @reply="replyToComment"></comments>' +
+		'</p>' +
+	'</div>',
+	methods: {
+		//this will relay the click event to the parent component through all recursion levels
+		replyToComment: function(id) {
+			this.$emit('reply', id);
+		}
+	},
+};
+
 var app = new Vue({
 	el: '#app',
+	components: {
+		Comments
+	},
 	data: {
 		login: '',
 		pass: '',
 		post: false,
+		selectedComment: false,
+		invalidComment: false,
 		invalidLogin: false,
 		invalidCredentials: false,
 		invalidPass: false,
@@ -71,6 +96,32 @@ var app = new Vue({
 						location.reload();
 					})
 			}
+		},
+		//select the comment we want to reply to
+		replyToComment: function(id) {
+			this.selectedComment = id;
+		},
+		addComment: function() {
+			var self = this;
+
+			var url = '/main_page/comment/' + this.post.id;
+			if (this.selectedComment) { //if a comment is selected add its id in the url
+				url += '/' + this.selectedComment;
+			}
+
+			var data = new FormData();
+			data.set('text', this.commentText);
+			axios.post(url, data)
+				.then(function(response) {
+					if (response.data.status === 'error') {
+						self.invalidComment = true;
+						return;
+					}
+
+					//update the post to rerender and reset the comment field
+					self.post = response.data.post;
+					self.commentText = '';
+				});
 		},
 		fiilIn: function () {
 			var self= this;

@@ -14,7 +14,9 @@ class Comment_model extends CI_Emerald_Model
     /** @var int */
     protected $user_id;
     /** @var int */
-    protected $assing_id;
+    protected $assign_id;
+    /** @var int */
+    protected $parent_id;
     /** @var string */
     protected $text;
 
@@ -51,20 +53,20 @@ class Comment_model extends CI_Emerald_Model
     /**
      * @return int
      */
-    public function get_assing_id(): int
+    public function get_assign_id(): int
     {
-        return $this->assing_id;
+        return $this->assign_id;
     }
 
     /**
-     * @param int $assing_id
+     * @param int $assign_id
      *
      * @return bool
      */
-    public function set_assing_id(int $assing_id)
+    public function set_assign_id(int $assign_id)
     {
-        $this->assing_id = $assing_id;
-        return $this->save('assing_id', $assing_id);
+        $this->assign_id = $assign_id;
+        return $this->save('assign_id', $assign_id);
     }
 
 
@@ -161,6 +163,11 @@ class Comment_model extends CI_Emerald_Model
         return $this->user;
     }
 
+    public function get_replies()
+    {
+        return self::get_all_by_parent_id($this->get_id());
+    }
+
     function __construct($id = NULL)
     {
         parent::__construct();
@@ -198,8 +205,14 @@ class Comment_model extends CI_Emerald_Model
      */
     public static function get_all_by_assign_id(int $assting_id)
     {
+        $data = App::get_ci()->s->from(self::CLASS_TABLE)
+            ->where([
+                'assign_id' => $assting_id,
+                'parent_id' => null, //here we want to select only the first level of comments
+            ])
+            ->orderBy('time_created','ASC')
+            ->many();
 
-        $data = App::get_ci()->s->from(self::CLASS_TABLE)->where(['assign_id' => $assting_id])->orderBy('time_created','ASC')->many();
         $ret = [];
         foreach ($data as $i)
         {
@@ -209,12 +222,29 @@ class Comment_model extends CI_Emerald_Model
     }
 
     /**
+     * Return all replies to a specified comment
+     * @param int $parent_id
+     * @return array|Comment_model[]
+     */
+    public static function get_all_by_parent_id(int $parent_id)
+    {
+        $data = App::get_ci()->s->from(self::CLASS_TABLE)
+            ->where(['parent_id' => $parent_id])
+            ->orderBy('time_created','ASC')
+            ->many();
+
+        return array_map(function($i) {
+            return (new self)->set($i);
+        }, $data);
+    }
+
+    /**
      * @param self|self[] $data
      * @param string $preparation
      * @return stdClass|stdClass[]
      * @throws Exception
      */
-    public static function preparation($data, $preparation = 'default')
+    public static function preparation($data, $preparation = 'full_info')
     {
         switch ($preparation)
         {
@@ -241,6 +271,7 @@ class Comment_model extends CI_Emerald_Model
             $o->text = $d->get_text();
 
             $o->user = User_model::preparation($d->get_user(),'main_page');
+            $o->replies = self::preparation($d->get_replies()); //TODO: maybe use lazy load here
 
             $o->likes = rand(0, 25);
 
@@ -253,6 +284,4 @@ class Comment_model extends CI_Emerald_Model
 
         return $ret;
     }
-
-
 }
