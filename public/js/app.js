@@ -130,10 +130,15 @@ var app = new Vue({
 			}
 			else{
 				self.invalidSum = false
-				axios.post('/main_page/add_money', {
-					sum: self.addSum,
-				})
+				var data = new FormData();
+				data.set('amount', this.addSum);
+				axios.post('/main_page/add_money', data)
 					.then(function (response) {
+						if (response.data.status === 'error') {
+							self.invalidSum = true;
+							return;
+						}
+
 						setTimeout(function () {
 							$('#addModal').modal('hide');
 						}, 500);

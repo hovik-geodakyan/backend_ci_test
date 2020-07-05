@@ -137,3 +137,17 @@ mysql/dump.sql - залить дамп
 ```
 ALTER TABLE comment ADD COLUMN parent_id int unsigned NULL;
 ```
+
+**And this query to create user_balance table**
+```
+CREATE TABLE `user_balance` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int unsigned DEFAULT NULL,
+  `amount` float NOT NULL,
+  `time_created` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `check_amount` float NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `user_balance_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+```

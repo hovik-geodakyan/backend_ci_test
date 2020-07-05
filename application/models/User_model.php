@@ -230,6 +230,9 @@ class User_model extends CI_Emerald_Model {
     function __construct($id = NULL)
     {
         parent::__construct();
+
+        App::get_ci()->load->model('UserBalance_model');
+
         $this->set_id($id);
     }
 
@@ -251,6 +254,22 @@ class User_model extends CI_Emerald_Model {
         $this->is_loaded(TRUE);
         App::get_ci()->s->from(self::CLASS_TABLE)->where(['id' => $this->get_id()])->delete()->execute();
         return (App::get_ci()->s->get_affected_rows() > 0);
+    }
+
+    /**
+     * @param float $amount
+     * @throws Exception
+     */
+    public function add_money(float $amount)
+    {
+        UserBalance_model::create($this->get_id(), $amount);
+
+        $this->set_wallet_balance(
+            $this->get_wallet_balance() + $amount
+        );
+        $this->set_wallet_total_refilled(
+            $this->get_wallet_total_refilled() + $amount
+        );
     }
 
     /**

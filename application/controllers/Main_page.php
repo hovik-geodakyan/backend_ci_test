@@ -147,8 +147,22 @@ class Main_page extends MY_Controller
         redirect(site_url('/'));
     }
 
-    public function add_money(){
-        // todo: add money to user logic
+    public function add_money()
+    {
+        if (!User_model::is_logged()){
+            return $this->response_error(CI_Core::RESPONSE_GENERIC_NEED_AUTH);
+        }
+
+        $this->form_validation->set_rules('amount', 'Amount', 'required|greater_than[0]|less_than_equal_to[1000]');
+        if (!$this->form_validation->run()) {
+            return $this->response_error(CI_Core::RESPONSE_GENERIC_WRONG_PARAMS);
+        }
+
+        $user = User_model::get_user();
+        $user->add_money(
+            $this->input->post('amount')
+        );
+
         return $this->response_success(['amount' => rand(1,55)]);
     }
 
