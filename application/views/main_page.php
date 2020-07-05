@@ -123,6 +123,9 @@
               <div class="invalid-feedback" v-if="invalidLogin">
                 Please write a username.
               </div>
+              <div class="invalid-feedback" v-if="invalidCredentials">
+                Invalid email or password.
+              </div>
             </div>
             <div class="form-group">
               <label for="exampleInputPassword1">Please enter password</label>

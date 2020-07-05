@@ -16,6 +16,7 @@ class Main_page extends MY_Controller
         App::get_ci()->load->model('User_model');
         App::get_ci()->load->model('Login_model');
         App::get_ci()->load->model('Post_model');
+        App::get_ci()->load->library('form_validation');
 
         if (is_prod())
         {
@@ -84,23 +85,28 @@ class Main_page extends MY_Controller
     }
 
 
-    public function login($user_id)
+    public function login()
     {
-        // Right now for tests:
-        $post_id = intval($user_id);
+        $this->form_validation->set_rules('login', 'Login', 'required|trim');
+        $this->form_validation->set_rules('password', 'Password', 'required');
 
-        if (empty($post_id)){
+        if (!$this->form_validation->run()) {
             return $this->response_error(CI_Core::RESPONSE_GENERIC_WRONG_PARAMS);
         }
 
-        // But data from modal window sent by POST request.  App::get_ci()->input...  to get it.
+        try {
+            $user = Login_model::attempt(
+                $this->input->post('login'),
+                $this->input->post('password')
+            );
+        } catch (CriticalException $e) {
+            //TODO: pass more verbose message to frontend
+            return $this->response_error(CI_Core::RESPONSE_GENERIC_WRONG_PARAMS);
+        }
 
+        Login_model::start_session($user->get_id());
 
-        //Todo: Authorisation
-
-        Login_model::start_session($user_id);
-
-        return $this->response_success(['user' => $user_id]);
+        return $this->response_success(['user' => $user->get_id()]);
     }
 
 

@@ -374,6 +374,22 @@ class User_model extends CI_Emerald_Model {
         }
     }
 
+    /**
+     * Get user by login
+     * @param string $login
+     * @return static|null
+     */
+    public static function get_by_credentials(string $login): ?self
+    {
+        //use email as login as it is unique through tha table
+        $data = App::get_ci()->s->from('user')
+            ->where('email', $login)
+            ->one();
 
+        if (!$data) {
+            return null;
+        }
 
+        return (new self)->set($data);
+    }
 }

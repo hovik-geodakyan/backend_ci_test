@@ -5,6 +5,7 @@ var app = new Vue({
 		pass: '',
 		post: false,
 		invalidLogin: false,
+		invalidCredentials: false,
 		invalidPass: false,
 		invalidSum: false,
 		posts: [],
@@ -57,14 +58,17 @@ var app = new Vue({
 			else{
 				self.invalidLogin = false
 				self.invalidPass = false
-				axios.post('/main_page/login', {
-					login: self.login,
-					password: self.pass
-				})
+				var formData = new FormData;
+				formData.set('login', self.login);
+				formData.set('password', self.pass);
+				axios.post('/main_page/login', formData)
 					.then(function (response) {
-						setTimeout(function () {
-							$('#loginModal').modal('hide');
-						}, 500);
+						if (response.data.status === 'error') {
+							self.invalidCredentials = true;
+							return;
+						}
+
+						location.reload();
 					})
 			}
 		},
