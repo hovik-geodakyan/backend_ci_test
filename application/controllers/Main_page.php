@@ -16,6 +16,7 @@ class Main_page extends MY_Controller
         App::get_ci()->load->model('User_model');
         App::get_ci()->load->model('Login_model');
         App::get_ci()->load->model('Post_model');
+        App::get_ci()->load->model('Boosterpack_model');
         App::get_ci()->load->library('form_validation');
 
         if (is_prod())
@@ -160,15 +161,31 @@ class Main_page extends MY_Controller
 
         $user = User_model::get_user();
         $user->add_money(
-            $this->input->post('amount')
+            $this->input->post('amount'),
+            'wallet_refill'
         );
 
         return $this->response_success(['amount' => rand(1,55)]);
     }
 
-    public function buy_boosterpack(){
+    public function buy_boosterpack($pack_id)
+    {
+        if (!User_model::is_logged()){
+            return $this->response_error(CI_Core::RESPONSE_GENERIC_NEED_AUTH);
+        }
+
+        try {
+            $pack = new Boosterpack_model($pack_id);
+        } catch (EmeraldModelNoDataException $ex){
+            return $this->response_error(CI_Core::RESPONSE_GENERIC_NO_DATA);
+        }
+
+        $likes = $pack->unpack();
+        $user = User_model::get_user();
+        $user->add_money($likes, 'booster_pack');
+
         // todo: add money to user logic
-        return $this->response_success(['amount' => rand(1,55)]);
+        return $this->response_success(['amount' => $likes]);
     }
 
 

@@ -258,11 +258,12 @@ class User_model extends CI_Emerald_Model {
 
     /**
      * @param float $amount
+     * @param string source
      * @throws Exception
      */
-    public function add_money(float $amount)
+    public function add_money(float $amount, string $source)
     {
-        UserBalance_model::create($this->get_id(), $amount);
+        UserBalance_model::create($this->get_id(), $amount, $source);
 
         $this->set_wallet_balance(
             $this->get_wallet_balance() + $amount

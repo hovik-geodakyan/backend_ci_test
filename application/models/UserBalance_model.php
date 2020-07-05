@@ -19,17 +19,18 @@ class UserBalance_model extends CI_Emerald_Model
     /**
      * @param int $user_id
      * @param float $amount
+     * @param string $source
      * @return static
      * @throws Exception
      */
-    public static function create(int $user_id, float $amount)
+    public static function create(int $user_id, float $amount, string $source)
     {
         $latest_transaction = self::get_latest_transaction($user_id);
         $latest_check_amount = $latest_transaction ? $latest_transaction->get_amount() : 0;
         $check_amount = $latest_check_amount + $amount;
 
         App::get_ci()->s->from(self::CLASS_TABLE)->insert(
-            compact('user_id', 'amount', 'check_amount')
+            compact('user_id', 'amount', 'check_amount', 'source')
         )->execute();
         return new static(App::get_ci()->s->get_insert_id());
     }
